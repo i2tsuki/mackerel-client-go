@@ -41,6 +41,27 @@ func (c *Client) FindServices() ([]*Service, error) {
 	return data.Services, err
 }
 
+// FetchServiceMetricNames fetch metric-name by service
+func (c *Client) FetchServiceMetricNames(service string) ([]string, error) {
+	req, err := http.NewRequest("GET", c.urlFor(fmt.Sprintf("/api/v0/services/%s/metric-names", service)).String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.Request(req)
+	defer closeResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+	var data struct {
+		Names []string `json:"names"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		return nil, err
+	}
+	return data.Names, err
+}
+
 // CreateService creates service
 func (c *Client) CreateService(param *CreateServiceParam) (*Service, error) {
 	resp, err := c.PostJSON("/api/v0/services", param)
