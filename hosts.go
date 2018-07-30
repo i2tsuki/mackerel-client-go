@@ -194,6 +194,27 @@ func (c *Client) FindHosts(param *FindHostsParam) ([]*Host, error) {
 	return data.Hosts, err
 }
 
+// FetchHostMetricNames fetch metric-name by host
+func (c *Client) FetchHostMetricNames(id string) ([]string, error) {
+	req, err := http.NewRequest("GET", c.urlFor(fmt.Sprintf("/api/v0/hosts/%s/metric-names", id)).String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.Request(req)
+	defer closeResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+	var data struct {
+		Names []string `json:"names"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		return nil, err
+	}
+	return data.Names, err
+}
+
 // CreateHost creating host
 func (c *Client) CreateHost(param *CreateHostParam) (string, error) {
 	resp, err := c.PostJSON("/api/v0/hosts", param)
